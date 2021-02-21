@@ -1,0 +1,151 @@
+<html>
+
+<style>
+
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+#main{
+    display: inline-block;
+}
+
+#formula{
+    width: 100%;
+    padding: 0.5em;
+}
+
+#grid{
+    display: grid;
+    grid-template-columns: 30px repeat(10, 110px);
+    /*border: 1px solid red;*/
+}
+
+.cell{
+    border: 1px solid black;
+    height: 30px;
+}
+
+.cell--label{
+    background-color: rgb(206, 206, 206);
+}
+
+.cell input{
+    height: 100%;
+    width: 100%;
+}
+
+</style>
+
+
+<div id="main">
+    <input id="formula">
+    <div id="grid">
+        <!--<div class="cell"><input></div>-->
+    </div>
+</div>
+
+
+<script>
+
+//selectors
+const main = document.getElementById("main");
+const grid = document.getElementById("grid");
+
+
+//event listeners
+
+
+//main
+const ROWS = 10;
+const COLUMNS = 10;
+
+
+let gridState = JSON.parse(localStorage.getItem('gridState'));
+
+if(gridState == null){
+    gridState = [];
+    for(var i=0; i<COLUMNS; i++) {
+        gridState[i] = new Array(ROWS);
+    }
+
+    localStorage.setItem('gridState', JSON.stringify(gridState));
+}
+
+
+generateCells(gridState);
+
+//functions
+function generateCells(gridState){
+
+    //Generate empty cell that corresponds to the upper left, where there is nothing
+    let cell = document.createElement("div");
+    cell.classList.add("cell", "cell--label");
+    grid.append(cell);
+
+    //Generate letter lables on top to represent the columns
+    for(var i=0; i<COLUMNS; i++){
+        let cell = document.createElement("div");
+        cell.classList.add("cell", "cell--label");
+        cell.innerText = String.fromCharCode(97 + i);
+        grid.append(cell);
+    }
+
+    for(var i=0; i<ROWS; i++) {
+
+        //Generate number lable to represent each row
+        let cell = document.createElement("div");
+        cell.classList.add("cell", "cell--label");
+        cell.innerText = i;
+        grid.append(cell);
+
+
+        for(var j=0; j<COLUMNS; j++) {
+            let cell = document.createElement("div");
+            let input = document.createElement("input");
+
+            cell.classList.add("cell");
+            input.value = gridState[j][i] == undefined? "" : gridState[j][i];
+            input.dataset.column = j;
+            input.dataset.row = i;
+
+            input.addEventListener("change", ()=>{
+
+                if(input.value[0] == '='){
+                    let column1 = /*parseInt(input.value[1])*/ input.value[1].charCodeAt(0) - 97;
+                    let row1 = parseInt(input.value[2]);
+                    let cell1 = parseInt(gridState[column1][row1]);
+
+                    let operator = input.value[3];
+
+                    let column2 = /*parseInt(input.value[4])*/ input.value[4].charCodeAt(0) - 97;
+                    let row2 = parseInt(input.value[5]);
+                    let cell2 = parseInt(gridState[column2][row2]);
+
+                    gridState[input.dataset.column][input.dataset.row] = eval(cell1+operator+cell2);
+                    input.value = eval(cell1+operator+cell2);
+                }
+                else{
+                    gridState[input.dataset.column][input.dataset.row] = input.value;
+                }
+
+                console.log(gridState);
+
+                localStorage.setItem('gridState', JSON.stringify(gridState));
+            });
+
+            cell.append(input);
+            grid.append(cell);
+        }
+    }
+
+}
+
+
+
+</script>
+
+
+</html>
