@@ -1,0 +1,40 @@
+
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+#main{
+    display: inline-block;
+}
+
+#formula{
+    width: 100%;
+    padding: 0.5em;
+}
+
+#grid{
+    display: grid;
+    grid-template-columns: 30px repeat(10, 110px);
+}
+
+.cell{
+    border: 1px solid black;
+    height: 30px;
+}
+
+.cell--label{
+    background-color: rgb(206, 206, 206);
+}
+
+.cell--selected{
+    border: 2px solid blue;
+}
+
+.cell input{
+    height: 100%;
+    width: 100%;
+    border: none;
+    outline:none;
+}
