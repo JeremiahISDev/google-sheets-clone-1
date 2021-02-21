@@ -59,36 +59,7 @@ const main = document.getElementById("main");
 const grid = document.getElementById("grid");
 const formula = document.getElementById("formula");
 
-
-//event listeners
-formula.addEventListener("change", ()=>{
-    gridState[selectedCell.column][selectedCell.row] = formula.value;
-    updateGrid();
-})
-
-
-//main
-const ROWS = 10;
-const COLUMNS = 10;
-let selectedCell = {column: 0, row: 0};
-
-
-let gridState = JSON.parse(localStorage.getItem('gridState'));
-
-if(gridState == null){
-    gridState = [];
-    for(var i=0; i<COLUMNS; i++) {
-        gridState[i] = new Array(ROWS);
-    }
-
-    localStorage.setItem('gridState', JSON.stringify(gridState));
-}
-
-generateCells(gridState);
-
-
-//-------------------
-
+//----------------
 let GridModel ={
 
     getGridState: ()=>{
@@ -98,10 +69,42 @@ let GridModel ={
     setGridState: (newGridState)=>{
         localStorage.setItem('gridState', JSON.stringify(newGridState));
     }
-
-
-
 }
+
+//event listeners
+formula.addEventListener("change", ()=>{
+    
+    let newGridState = GridModel.getGridState();
+    newGridState[selectedCell.column][selectedCell.row] = formula.value;
+    GridModel.setGridState(newGridState);
+    
+    updateGrid();
+});
+
+
+
+
+//main
+const ROWS = 10;
+const COLUMNS = 10;
+let selectedCell = {column: 0, row: 0};
+
+
+//let gridState = JSON.parse(localStorage.getItem('gridState'));
+
+if(GridModel.getGridState() == null){
+    let gridState = [];
+    for(var i=0; i<COLUMNS; i++) {
+        gridState[i] = new Array(ROWS);
+    }
+
+    //localStorage.setItem('gridState', JSON.stringify(gridState));
+    GridModel.setGridState(gridState);
+}
+
+generateCells(GridModel.getGridState());
+
+
 
 
 //functions
@@ -170,12 +173,15 @@ function generateCells(gridState){
                     input.value = valueShownToUser(input.value);
                 }
                 else{
-                    gridState[input.dataset.column][input.dataset.row] = input.value;
+                    
+                    let newGridState = GridModel.getGridState();
+                    newGridState[input.dataset.column][input.dataset.row] = input.value;
+                    GridModel.setGridState(newGridState);
                 }
 
-                console.log(gridState);
+                console.log(GridModel.getGridState());
 
-                localStorage.setItem('gridState', JSON.stringify(gridState));
+                //localStorage.setItem('gridState', JSON.stringify(gridState));
             });
 
             cell.append(input);
@@ -193,7 +199,7 @@ function updateGrid(){
         node.remove()
     })
 
-    generateCells(gridState)
+    generateCells(GridModel.getGridState())
 }
 
 function removeSelectedClassFromAllCells(){
@@ -205,6 +211,9 @@ function removeSelectedClassFromAllCells(){
 }
 
 function valueShownToUser(formula){
+    
+    let gridState = GridModel.getGridState();
+    
     let column1 = /*parseInt(input.value[1])*/ formula[1].charCodeAt(0) - 97;
     let row1 = parseInt(formula[2]);
     let cell1 = parseInt(gridState[column1][row1]);
