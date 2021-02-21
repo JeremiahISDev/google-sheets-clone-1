@@ -32,9 +32,15 @@
     background-color: rgb(206, 206, 206);
 }
 
+.cell--selected{
+    border: 2px solid blue;
+}
+
 .cell input{
     height: 100%;
     width: 100%;
+    border: none;
+    outline:none;
 }
 
 </style>
@@ -42,9 +48,7 @@
 
 <div id="main">
     <input id="formula">
-    <div id="grid">
-        <!--<div class="cell"><input></div>-->
-    </div>
+    <div id="grid"></div>
 </div>
 
 
@@ -53,14 +57,20 @@
 //selectors
 const main = document.getElementById("main");
 const grid = document.getElementById("grid");
+const formula = document.getElementById("formula");
 
 
 //event listeners
+formula.addEventListener("change", ()=>{
+    gridState[selectedCell.column][selectedCell.row] = formula.value;
+    updateGrid();
+})
 
 
 //main
 const ROWS = 10;
 const COLUMNS = 10;
+let selectedCell = {column: 0, row: 0};
 
 
 let gridState = JSON.parse(localStorage.getItem('gridState'));
@@ -74,8 +84,25 @@ if(gridState == null){
     localStorage.setItem('gridState', JSON.stringify(gridState));
 }
 
-
 generateCells(gridState);
+
+
+//-------------------
+
+let GridModel ={
+
+    getGridState: ()=>{
+        return JSON.parse(localStorage.getItem('gridState'));
+    },
+
+    setGridState: (newGridState)=>{
+        localStorage.setItem('gridState', JSON.stringify(newGridState));
+    }
+
+
+
+}
+
 
 //functions
 function generateCells(gridState){
@@ -107,25 +134,40 @@ function generateCells(gridState){
             let input = document.createElement("input");
 
             cell.classList.add("cell");
+            if(selectedCell.column == j && selectedCell.row == i){
+                cell.classList.add("cell--selected");
+            }
+
             input.value = gridState[j][i] == undefined? "" : gridState[j][i];
             input.dataset.column = j;
             input.dataset.row = i;
 
+            input.addEventListener('click', ()=>{
+                
+                selectedCell = {column: input.dataset.column, row: input.dataset.row};
+                formula.value = input.value;
+                removeSelectedClassFromAllCells();
+                input.parentElement.classList.add("cell--selected");
+            })
+            
+            // "change" is when we commit the change
             input.addEventListener("change", ()=>{
 
                 if(input.value[0] == '='){
-                    let column1 = /*parseInt(input.value[1])*/ input.value[1].charCodeAt(0) - 97;
+                    /*let column1 = input.value[1].charCodeAt(0) - 97;
                     let row1 = parseInt(input.value[2]);
                     let cell1 = parseInt(gridState[column1][row1]);
 
                     let operator = input.value[3];
 
-                    let column2 = /*parseInt(input.value[4])*/ input.value[4].charCodeAt(0) - 97;
+                    let column2 = input.value[4].charCodeAt(0) - 97;
                     let row2 = parseInt(input.value[5]);
                     let cell2 = parseInt(gridState[column2][row2]);
 
                     gridState[input.dataset.column][input.dataset.row] = eval(cell1+operator+cell2);
-                    input.value = eval(cell1+operator+cell2);
+                    input.value = eval(cell1+operator+cell2);*/
+
+                    input.value = valueShownToUser(input.value);
                 }
                 else{
                     gridState[input.dataset.column][input.dataset.row] = input.value;
@@ -143,6 +185,41 @@ function generateCells(gridState){
 
 }
 
+
+function updateGrid(){
+    let gridChildNodes = Array.from(grid.childNodes);
+
+    gridChildNodes.forEach(node=>{
+        node.remove()
+    })
+
+    generateCells(gridState)
+}
+
+function removeSelectedClassFromAllCells(){
+    let gridChildNodes = Array.from(grid.childNodes);
+
+    gridChildNodes.forEach(node=>{
+        node.classList.remove("cell--selected");
+    })
+}
+
+function valueShownToUser(formula){
+    let column1 = /*parseInt(input.value[1])*/ formula[1].charCodeAt(0) - 97;
+    let row1 = parseInt(formula[2]);
+    let cell1 = parseInt(gridState[column1][row1]);
+
+    let operator = formula[3];
+
+    let column2 = /*parseInt(input.value[4])*/ formula[4].charCodeAt(0) - 97;
+    let row2 = parseInt(formula[5]);
+    let cell2 = parseInt(gridState[column2][row2]);
+
+    //gridState[input.dataset.column][input.dataset.row] = eval(cell1+operator+cell2);
+    //input.value = eval(cell1+operator+cell2);
+
+    return eval(cell1+operator+cell2);
+}
 
 
 </script>
